@@ -6,14 +6,14 @@ from django.http import HttpResponse
 import urllib
 from elancoproject.settings import BASE_DIR
 import requests
-from .models import ElancoData
+from .models import ElancoData, Resources
 import json
 # Create your views here.
 #Homepage
 def homepage(request):
-    data = ElancoData.objects
+    data = Resources.objects
     return render(request, 'home.html',{'data':data})
-
+#-------------------------------------------------------------------------------------------------------
 #Puts all the data from API to the model
 def store_data(request):
     jsondata = get_data('https://engineering-task.elancoapps.com/api/raw')
@@ -57,3 +57,34 @@ def checkurl(url):
 def dateformatter(date):
     dlist = date.split("/")
     return dlist[2]+"-"+dlist[1]+"-"+dlist[0] 
+#-------------------------------------------------------------------------------------------------------
+#getting the list for homepage
+def store_resources(request):
+    testurl = "https://engineering-task.elancoapps.com/api/resources"
+    if (url := checkurl(testurl)):
+        retarr = []
+        text = requests.get(url).text
+        data = strToList(text)
+        Resources.objects.all().delete()
+        for i in data:
+            resource = Resources()
+            url_parts = ["https://engineering-task.elancoapps.com/api/resources/",i.replace(" ","%20")]
+            resource.name = i
+            resource.apiurl = reduce(urllib.parse.urljoin, url_parts)
+            resource.save()
+        print("Loaded Resources")
+
+def strToList(text):
+    textn=''
+    for i in range (1,len(text)-2):
+        if text[i].isalnum() or text[i] == "," or text[i]==' ':
+            textn+=text[i]
+    return textn.split(',')
+
+#-----------------------------------------------------------------------------------------------------
+def datapage(request):
+    name = request.GET.get('name')
+    print(name)
+    data = ElancoData.objects.filter(ServiceName__icontains=name)
+    print(data,"####")
+    return render(request,"data.html",{"data":data})

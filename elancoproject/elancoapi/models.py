@@ -13,3 +13,7 @@ class ElancoData(models.Model):
     UnitOfMeasure = models.CharField(max_length=200)
     Location = models.CharField(max_length=200)
     ServiceName = models.CharField(max_length=200)
+
+class Resources(models.Model):
+    name = models.CharField(max_length=200)
+    apiurl = models.CharField(max_length=200)

@@ -20,5 +20,7 @@ from elancoapi import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',views.homepage),
-    path('api/',views.store_data)
+    path('api/data/',views.store_data),
+    path('api/resources/',views.store_resources),
+    path('data/',views.datapage)
 ]
