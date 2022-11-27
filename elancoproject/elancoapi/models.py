@@ -17,3 +17,5 @@ class ElancoData(models.Model):
 class Resources(models.Model):
     name = models.CharField(max_length=200)
     apiurl = models.CharField(max_length=200)
+    highestcost = models.FloatField(default=0)
+    count = models.IntegerField(default=0)

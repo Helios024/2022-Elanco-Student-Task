@@ -8,10 +8,14 @@ from elancoproject.settings import BASE_DIR
 import requests
 from .models import ElancoData, Resources
 import json
+from django.db.models import Avg, Max, Min, Sum
 # Create your views here.
 #Homepage
 def homepage(request):
+    resource = request.GET.get("resource")
     data = Resources.objects
+    if (resource):
+        data = Resources.objects.filter(name__contains=resource)
     return render(request, 'home.html',{'data':data})
 #-------------------------------------------------------------------------------------------------------
 #Puts all the data from API to the model
@@ -71,6 +75,8 @@ def store_resources(request):
             url_parts = ["https://engineering-task.elancoapps.com/api/resources/",i.replace(" ","%20")]
             resource.name = i
             resource.apiurl = reduce(urllib.parse.urljoin, url_parts)
+            resource.highestcost = ElancoData.objects.all().filter(ServiceName = i).aggregate(Max('Cost'))['Cost__max']
+            resource.count = ElancoData.objects.all().filter(ServiceName = i).count()
             resource.save()
         print("Loaded Resources")
 
@@ -84,7 +90,8 @@ def strToList(text):
 #-----------------------------------------------------------------------------------------------------
 def datapage(request):
     name = request.GET.get('name')
-    print(name)
-    data = ElancoData.objects.filter(ServiceName__icontains=name)
-    print(data,"####")
-    return render(request,"data.html",{"data":data})
+    resourcegrp = request.GET.get('resourcegrp')
+    data = ElancoData.objects.filter(ServiceName__contains=name)
+    if (resourcegrp):
+        data = ElancoData.objects.filter(ServiceName__contains=name,ResourceGroup__contains=resourcegrp)
+    return render(request,"data.html",{"data":data,"name":name})
